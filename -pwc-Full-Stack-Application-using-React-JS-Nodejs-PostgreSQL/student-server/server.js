@@ -11,30 +11,13 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const fs = require('fs');
-const path = require('path');
-
-function readSecret(name, defaultValue = null) {
-    const secretPath = path.join('/run/secrets', name);
-
-    try {
-        if (fs.existsSync(secretPath)) {
-            return fs.readFileSync(secretPath, 'utf8').trim();
-        }
-    } catch (err) {
-        console.error(`[SECRET ERROR] ${name}:`, err.message);
-    }
-
-    return process.env[name.toUpperCase()] || defaultValue;
-}
-
 // PostgreSQL connection
 const pool = new Pool({
-    user: 'postgres',
-    password: 'data@data',
-    database: 'student_master',
-    host: 'localhost',
-    port: 5432,
+    user: process.env.POSTGRES_USER || 'postgres',
+    password: process.env.POSTGRES_PASSWORD || 'data@data',
+    database: process.env.POSTGRES_DB || 'student_master',
+    host: process.env.POSTGRES_HOST || 'localhost',
+    port: Number(process.env.POSTGRES_PORT || 5432),
     max: 10
 });
 
@@ -51,7 +34,7 @@ app.listen(port, (err) => {
 
 // GET all students
 app.get('/students', (req, res) => {
-    const sql = 'SELECT * FROM student';
+    const sql = 'SELECT * FROM students';
     pool.query(sql, (err, result) => {
         if (err) return res.json(err);
         return res.status(200).json(result.rows);
@@ -61,7 +44,7 @@ app.get('/students', (req, res) => {
 // GET one student by ID
 app.get('/students/:studentid', (req, res) => {
     const stdId = Number(req.params.studentid);
-    const sql = 'SELECT * FROM student WHERE studentid = $1';
+    const sql = 'SELECT * FROM students WHERE studentid = $1';
     pool.query(sql, [stdId], (err, result) => {
         if (err) return res.json(err);
         return res.status(200).json(result.rows);
@@ -71,7 +54,7 @@ app.get('/students/:studentid', (req, res) => {
 // POST create student
 app.post('/students', (req, res) => {
     const { name, major, email } = req.body;
-    const sql = 'INSERT INTO student(name, major, email) VALUES($1, $2, $3) RETURNING *';
+    const sql = 'INSERT INTO students(name, major, email) VALUES($1, $2, $3) RETURNING *';
     pool.query(sql, [name, major, email], (err, result) => {
         if (err) return res.json(err);
         return res.status(201).json(result.rows[0]);
@@ -82,7 +65,7 @@ app.post('/students', (req, res) => {
 app.patch('/students/:studentid', (req, res) => {
     const stdId = Number(req.params.studentid);
     const { name, major, email } = req.body;
-    const sql = 'UPDATE student SET name = $1, major = $2, email = $3 WHERE studentid = $4';
+    const sql = 'UPDATE students SET name = $1, major = $2, email = $3 WHERE studentid = $4';
     pool.query(sql, [name, major, email, stdId], (err, result) => {
         if (err) return res.json(err);
         return res.status(200).send(`Student updated successfully: ${stdId}`);
@@ -92,7 +75,7 @@ app.patch('/students/:studentid', (req, res) => {
 // DELETE student
 app.delete('/students/:studentid', (req, res) => {
     const stdId = Number(req.params.studentid);
-    const sql = 'DELETE FROM student WHERE studentid = $1';
+    const sql = 'DELETE FROM students WHERE studentid = $1';
     pool.query(sql, [stdId], (err, result) => {
         if (err) return res.json(err);
         return res.status(200).send(`Student deleted successfully: ${stdId}`);

@@ -2,13 +2,13 @@ version: "3.8"
 
 services:
   database:
-    image: postgres:15
+    image: postgres:13
     container_name: postgres-db
     restart: always
 
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_DB: student_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
 
     secrets:
@@ -25,7 +25,7 @@ services:
       - backend-network
 
   backend:
-    build: ./student-server
+    build: ./-pwc-Full-Stack-Application-using-React-JS-Nodejs-PostgreSQL/student-server
     container_name: backend
     restart: always
 
@@ -33,11 +33,11 @@ services:
       - database
 
     environment:
-      DB_HOST: database
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_NAME: student_db
-      DB_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
 
     secrets:
       - db_password
@@ -50,7 +50,7 @@ services:
       - frontend-network
 
   webapp:
-    build: ./student-web
+    build: ./-pwc-Full-Stack-Application-using-React-JS-Nodejs-PostgreSQL/student-web
     container_name: react-app
     restart: always
 
@@ -72,4 +72,4 @@ networks:
 
 secrets:
   db_password:
-    file: ./db_password.txt
+    file: ${POSTGRES_PASSWORD_FILE}

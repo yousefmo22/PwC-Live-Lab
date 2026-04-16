@@ -9,6 +9,10 @@ function App() {
   const [studentData, setStudentData] = useState({ name: "", major: "", email: "" });
   const [errorMsg, setErrorMsg] = useState("");
 
+  const normalizeStudents = (payload) => {
+    return Array.isArray(payload) ? payload : [];
+  };
+
   const openPopup = () => {
     setIsModalOpen(true);
   };
@@ -22,14 +26,20 @@ function App() {
 
   const getAllStudents = () => {
     axios.get("http://localhost:3005/students").then((res) => {
-      setStudents(res.data);
-      setFilteredStudents(res.data);
+      const safeStudents = normalizeStudents(res.data);
+      setStudents(safeStudents);
+      setFilteredStudents(safeStudents);
+    }).catch((error) => {
+      console.error("Error fetching students:", error);
+      setStudents([]);
+      setFilteredStudents([]);
     });
   };
 
   const handleSearch = (e) => {
     const searchValue = e.target.value.toLowerCase();
-    const filteredData = students.filter(student =>
+    const source = normalizeStudents(students);
+    const filteredData = source.filter(student =>
       student.name.toLowerCase().includes(searchValue) ||
       student.major.toLowerCase().includes(searchValue) ||
       student.email.toLowerCase().includes(searchValue)
@@ -167,7 +177,7 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {filteredStudents.map(student => (
+              {normalizeStudents(filteredStudents).map(student => (
                 <tr key={student.studentid}>
                   <td>{student.studentid}</td>
                   <td>{student.name}</td>
