@@ -56,6 +56,12 @@
  *  - All fields required for add/update
  *  - Changes reflected immediately
  *
+ * Docker Images:
+ *  - Web: https://hub.docker.com/r/yousefmo22/pwc-2-webapp
+ *    Pull command: docker pull yousefmo22/pwc-2-webapp:latest
+ *  - Backend: https://hub.docker.com/r/yousefmo22/pwc-2-backend
+ *    Pull command: docker pull yousefmo22/pwc-2-backend:latest
+ *
  * Learning Goals:
  *  - Integrate React with RESTful API
  *  - Manage form state and input handling
